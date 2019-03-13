@@ -1,4 +1,10 @@
 <?php
+
+header('Access-Control-Allow-Origin: *');
+header('Content-Type: application/json');
+header('Access-Control-Allow-Methods: *');
+header('Access-Control-Max-Age: 3600');
+header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, Origin, Authorization, Accept, Client-Security-Token, Accept-Encoding');
 include_once'config/database.php';
 // get database connection
 $database = new Database();
@@ -34,6 +40,7 @@ class createEvent
     {
     	$sql = "INSERT INTO events (event_id, title, start_date,end_date,venue,lat,lng,event_reach_id,created_by,	event_status) VALUES (NUll,:title,:start_date,:end_date,:venue,:lat,:lng,:event_reach_id,:created_by,:status)";
 
+
     		$stmt = $this->conn->prepare($sql);
     		$stmt->bindParam(':title', $this->title);
 			$stmt->bindParam(':start_date', $this->start_date);
@@ -44,16 +51,20 @@ class createEvent
 			$stmt->bindParam(':lng', $this->lng);
 			//$stmt->bindParam(':event_reach_id', $this->event_reach_id);
 			$stmt->bindParam(':created_by', $this->created_by);
-
+			//$num = $stmt->rowCount();
 			//$stmt= $this->conn->prepare($sql);
 			if($stmt->execute()){
-    		echo json_encode(array("message" => "Successfully Created event."));
+    			//echo json_encode(array("message" => "Successfully Created event."));
+    		    $res = [ 'code' => 0,'result'=> []  ,'msg' => 'Successfully Event added' ];
+    			echo json_encode($res);
 			//echo "Successfully updated Profile";
 			}// End of if profile is ok 
 			else{
 			//print_r($sql->errorInfo()); // if any error is there it will be posted
 			//$msg=" Database problem, please contact site admin ";
-				echo json_encode(array("message" => "failed to create event."));
+				//echo json_encode(array("message" => "failed to create event."));
+				    $res = [ 'code' => 1,'result'=> []  ,'msg' => 'Event is not added ' ];
+    				echo json_encode($res);
 			}
     }
 }

@@ -1,16 +1,18 @@
 <?php
 //required headers
 
+
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: *');
 header('Access-Control-Max-Age: 3600');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, Origin, Authorization, Accept, Client-Security-Token, Accept-Encoding');
 
 
 
+
 // files needed to connect to database
-include_once '/config/database.php';
+include_once 'config/database.php';
 include_once 'objects/user.php';
  
 // get database connection
@@ -22,7 +24,6 @@ $user = new User($db);
  
 // get posted data
 $data = json_decode(file_get_contents("php://input"));
- 
 // set product property values
 $user->email = $data->email;
 $user->password = $data->password;
@@ -53,6 +54,8 @@ $email_exists = $user->emailExists();
              
                 // get number of rows
                 $num = $stmt->rowCount();
+
+     
              
                 // if email exists, assign values to object properties for easy access and use for php sessions
                 if($num>0){
@@ -75,44 +78,40 @@ $email_exists = $user->emailExists();
                 return false;
             }
 // check if email exists and if password is correct
-if($email_exists ){
+            if($email_exists ){
+             
+                $token = array(
+                   'iss' => 'localhost',
+                   'iat' => time(),
+                   'exp' => time() +(2*60),
+                   "data" => array(
+                       "id" => $user->id,
+                       "fname" => $user->fname,
+                       "lname" => $user->lname,
+                       "email" => $user->email,
+                       "pass" =>  $user->password,
+                       "user_type" =>  $user->user_type
+                   )
+                );
  
-    $token = array(
-       'iss' => 'localhost',
-       'iat' => time(),
-       'exp' => time() +(2*60),
-       "data" => array(
-           "id" => $user->id,
-           "fname" => $user->fname,
-           "lname" => $user->lname,
-           "email" => $user->email,
-           "pass" =>  $user->password,
-           "user_type" =>  $user->user_type
-       )
-    );
  
-    // set response code
-    http_response_code(200);
  
     // generate jwt
     $jwt = JWT::encode($token, SECRETE_KEY);
-    echo json_encode(
-            array(
-                $jwt
-            )
-        );
+
+    $res = [ 'code' => 1,'Token'=> $jwt  ,'msg' => 'Successfully User Loged in' ];
+    echo json_encode($res);
  
 }
  
-// login failed will be here
 
-// login failed
 else{
  
-    // set response code
-   http_response_code(401);
+  
+  // http_response_code(401);
  
     // tell the user login failed
-    echo json_encode(array("message" => "Login failed."));
+  $res = [ 'code' => 3,'result'=> []  ,'msg' => ' User is no loged in.' ];
+  echo json_encode($res);
 }
 ?>
